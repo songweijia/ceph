@@ -123,7 +123,7 @@ else
                 ensure_decent_gcc_on_deb 4.8
                 ;;
             *Xenial*)
-                ensure_decent_gcc_on_deb 5
+                ensure_decent_gcc_on_deb 5.4.0
                 ;;
         esac
         if ! test -r debian/control ; then
