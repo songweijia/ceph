@@ -3400,6 +3400,7 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
     int i = 0;
     std::vector<OSDOp>::iterator itr = ctx->ops->begin();
     while(itr!=ctx->ops->end()) {
+      
       dout(10) << "[SONIC-" << i << "], op->op = " <<  itr->op.op << ","
         << "op->flags=" << itr->op.flags << ","
         << "oid = " << itr->soid.oid.name << ","
@@ -3408,9 +3409,13 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
       if ( (itr->op.op & CEPH_OSD_OP_MODE_WR) &&
            (itr->op.op & CEPH_OSD_OP_TYPE_DATA)) {
         int write_op = itr->op.op & 0xf;
-        dout(10) << "[SONIC-" << i << "], write_op = " << write_op << dendl;
-        dout(10) << "[SONIC-" << i << "], offset = " << itr->op.extent.offset
+        char buf[4096] = "\0";
+        if(itr->op.extent.length > 0 )
+          itr->indata.copy(0,itr->op.extent.length,buf);
+        dout(10) << "[SONIC-" << i << "], write_op = " << write_op
+          << ", offset = " << itr->op.extent.offset
           << ", length = " << itr->op.extent.length
+          << ", value = " << buf
           << ", truncate_size = " << itr->op.extent.truncate_size
           << ", truncate_seq = " << itr->op.extent.truncate_seq << dendl;
       }
