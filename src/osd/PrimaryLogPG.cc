@@ -1848,9 +1848,9 @@ void PrimaryLogPG::do_op(OpRequestRef& op)
   FUNCTRACE();
   // NOTE: take a non-const pointer here; we must be careful not to
   // change anything that will break other reads on m (operator<<).
-  MOSDOp *m = static_cast<MOSDOp*>(op->get_nonconst_req());
+  MOSDOp *m = static_cast<MOSDOp*>(op->get_nonconst_req()); // get the message OpRequest tracks.
   assert(m->get_type() == CEPH_MSG_OSD_OP);
-  if (m->finish_decode()) {
+  if (m->finish_decode()) { // extract info from buffer.
     op->reset_desc();   // for TrackedOp
     m->clear_payload();
   }
@@ -2335,7 +2335,8 @@ void PrimaryLogPG::do_op(OpRequestRef& op)
 
   op->mark_started();
 
-  execute_ctx(ctx);
+  execute_ctx(ctx); // execute_ctx...
+  // send WAN request here.
   utime_t prepare_latency = ceph_clock_now();
   prepare_latency -= op->get_dequeued_time();
   osd->logger->tinc(l_osd_op_prepare_lat, prepare_latency);
@@ -3394,6 +3395,28 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
   issue_repop(repop, ctx);
   eval_repop(repop);
   repop->put();
+  // log the operation, prepare to send to WAN agent.
+  {
+    int i = 0;
+    std::vector<OSDOp>::iterator itr = ctx->ops->begin();
+    while(itr!=ctx->ops->end()) {
+      dout(10) << "[SONIC-" << i << "], op->op = " <<  itr->op.op << ","
+        << "op->flags=" << itr->op.flags << ","
+        << "oid = " << itr->soid.oid.name << ","
+        << "payload_len = " << itr->op.payload_len << dendl;
+      if ( (itr->op.op & CEPH_OSD_OP_MODE_WR) &&
+           (itr->op.op & CEPH_OSD_OP_TYPE_DATA)) {
+        int write_op = itr->op.op & 0xf;
+        dout(10) << "[SONIC-" << i << "], write_op = " << write_op << dendl;
+        dout(10) << "[SONIC-" << i << "], offset = " << itr->op.extent.offset
+          << ", length = " << itr->op.extent.length
+          << ", truncate_size = " << itr->op.extent.truncate_size
+          << ", truncate_seq = " << itr->op.extent.truncate_seq << dendl;
+      }
+      itr++;
+      i++;
+    }
+  }
 }
 
 void PrimaryLogPG::close_op_ctx(OpContext *ctx) {
