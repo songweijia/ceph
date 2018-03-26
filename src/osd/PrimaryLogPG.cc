@@ -3403,6 +3403,7 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
       dout(10) << "[SONIC-" << i << "], op->op = " <<  itr->op.op << ","
         << "op->flags=" << itr->op.flags << ","
         << "oid = " << itr->soid.oid.name << ","
+        << "oloc = " << ctx->obs->oi.soid.oid.name << ","
         << "payload_len = " << itr->op.payload_len << dendl;
       if ( (itr->op.op & CEPH_OSD_OP_MODE_WR) &&
            (itr->op.op & CEPH_OSD_OP_TYPE_DATA)) {
