@@ -1,10 +1,13 @@
 #include <sys/types.h>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <arpa/inet.h>
+
 
 #include "wana/WANAgent.h"
 #include "common/config.h"
+#include "common/ceph_argparse.h"
 #include "msg/Messenger.h"
 #include "global/global_init.h"
 #include "global/signal_handler.h"
@@ -24,6 +27,22 @@ static void usage()
 
 int main(int argc, const char **argv) {
   int r;
+
+  // initialize the global environment
+  vector<const char*> args;
+  argv_to_vec(argc, argv, args);
+  env_to_vec(args);
+
+  vector<const char*> def_args;
+  // We want to enable leveldb's log, while allowing users to override this
+  // option, therefore we will pass it as a default argument to global_init().
+  def_args.push_back("--leveldb-log=");
+
+  auto cct = global_init(&def_args, args, CEPH_ENTITY_TYPE_WANA,
+    CODE_ENVIRONMENT_DAEMON, 0, "wana_data"); // <-- it seems the data_dir_option is not used?
+  // we don't need this so far.
+  // ceph_heap_profiler_init();
+
   std::string msgr_type = g_conf->get_val<std::string>("ms_type");
   Messenger *ms_near = Messenger::create(g_ceph_context, msgr_type,
     entity_name_t::WANA(), "wana", getpid(), Messenger::HAS_HEAVY_TRAFFIC | Messenger::HAS_MANY_CONNECTIONS );
