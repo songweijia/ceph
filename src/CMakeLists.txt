@@ -656,6 +656,8 @@ endif(HAVE_ARMV8_CRC)
 add_library(common STATIC ${ceph_common_objs})
 target_link_libraries(common ${ceph_common_deps})
 
+add_subdirectory(wana)
+
 add_library(ceph-common SHARED ${ceph_common_objs})
 target_link_libraries(ceph-common ${ceph_common_deps})
 # appease dpkg-shlibdeps
@@ -880,6 +882,13 @@ if(WITH_FUSE)
 endif()
 install(TARGETS ceph-osd DESTINATION bin)
 
+set(ceph_wana_srcs
+  ceph_wana.cc)
+add_executable(ceph-wana ${ceph_wana_srcs})
+add_dependencies(ceph-wana wana)
+target_link_libraries(ceph-wana wana os global-static common)
+install(TARGETS ceph-wana DESTINATION bin)
+
 add_subdirectory(mds)
 set(ceph_mds_srcs
   ceph_mds.cc)
@@ -1100,6 +1109,7 @@ add_subdirectory(brag)
 # Everything you need to spin up a cluster with vstart.sh
 add_custom_target(vstart-base DEPENDS
     ceph-osd
+    ceph-wana
     ceph-mon
     ceph-mgr
     ceph-authtool

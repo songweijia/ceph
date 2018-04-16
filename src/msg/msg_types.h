@@ -42,6 +42,7 @@ public:
   static const int TYPE_OSD = CEPH_ENTITY_TYPE_OSD;
   static const int TYPE_CLIENT = CEPH_ENTITY_TYPE_CLIENT;
   static const int TYPE_MGR = CEPH_ENTITY_TYPE_MGR;
+  static const int TYPE_WANA = CEPH_ENTITY_TYPE_WANA;
 
   static const int64_t NEW = -1;
 
@@ -57,6 +58,8 @@ public:
   static entity_name_t OSD(int64_t i=NEW) { return entity_name_t(TYPE_OSD, i); }
   static entity_name_t CLIENT(int64_t i=NEW) { return entity_name_t(TYPE_CLIENT, i); }
   static entity_name_t MGR(int64_t i=NEW) { return entity_name_t(TYPE_MGR, i); }
+  static entity_name_t WANA(int64_t i=NEW) { return entity_name_t(TYPE_WANA, i); }
+  
   
   int64_t num() const { return _num; }
   int type() const { return _type; }
@@ -96,6 +99,8 @@ public:
     } else if (strstr(start, "client.") == start) {
       _type = TYPE_CLIENT;
       start += 7;
+    } else if (strstr(start, "wana.") == start) {
+      _type = TYPE_WANA;
     } else if (strstr(start, "mgr.") == start) {
       _type = TYPE_MGR;
       start += 4;
