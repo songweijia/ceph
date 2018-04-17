@@ -14,12 +14,16 @@ class Connection;
 class RWLock;
 
 class WANAgentClient : public Dispatcher {
+private:
+  CephContext *cct;
+
 public:
   /**
    * constructor
    */
   WANAgentClient(CephContext *cct_, Messenger *ms_wan_agent) : 
     Dispatcher(cct_),
+    cct(cct_),
     wana_messenger(ms_wan_agent),
     lock("wanaclient"),
     wana_con(nullptr) {

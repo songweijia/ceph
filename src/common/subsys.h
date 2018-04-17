@@ -41,6 +41,7 @@ SUBSYS(journaler, 0, 5)
 SUBSYS(objectcacher, 0, 5)
 SUBSYS(client, 0, 5)
 SUBSYS(osd, 1, 5)
+SUBSYS(wana, 1, 5)    // log level for the WAN Agent.
 SUBSYS(optracker, 0, 5)
 SUBSYS(objclass, 0, 5)
 SUBSYS(filestore, 1, 3)

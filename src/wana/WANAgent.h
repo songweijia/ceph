@@ -25,6 +25,7 @@ public:
     Messenger *ms_objecter,         // send updates to local data center.
     MonClient *mc                   // Monitor client
   ): Dispatcher(cct_),
+  cct(cct_),
   far_messenger(ms_far),
   near_messenger(ms_near),
   objecter_messenger(ms_objecter),
@@ -56,6 +57,7 @@ public:
   void handle_signal(int signum);
   
 protected:
+  CephContext *cct;
   /*
     TODO:STEP 2, implementing the client connecting to the remote data center.
   class RemoteClient : public Dispatcher {

@@ -6,6 +6,7 @@
 #include "common/debug.h"
 
 #define dout_context cct
+#define dout_subsys ceph_subsys_wana
 
 void WANAgent::ms_fast_dispatch(Message *m) {
   this->ms_dispatch(m);

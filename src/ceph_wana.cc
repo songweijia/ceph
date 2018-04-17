@@ -13,6 +13,9 @@
 #include "global/signal_handler.h"
 #include "include/assert.h"
 
+#define dout_context g_ceph_context
+#define dout_subsys ceph_subsys_wana
+
 WANAgent *wana = nullptr;
 
 void handle_wana_signal(int signum) {

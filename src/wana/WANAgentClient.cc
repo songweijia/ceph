@@ -2,6 +2,9 @@
 #include "WANAgentClient.h"
 #include "global/global_init.h"
 
+#define dout_context cct
+#define dout_subsys ceph_subsys_wana
+
 int WANAgentClient::init() {
   assert(this->wana_messenger);
 
