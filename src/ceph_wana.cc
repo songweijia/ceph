@@ -52,7 +52,7 @@ int main(int argc, const char **argv) {
   ms_near->set_policy(entity_name_t::TYPE_WANA,Messenger::Policy::stateless_server(0));
 
   // TODO: make this nicer by using configuration tools.
-  std::string near_wana_addr = g_conf->get_val<std::string>("wana near");
+  std::string near_wana_addr = g_conf->get_val<std::string>("wana_near");
   std::istringstream f(near_wana_addr);
   std::string tk;
   struct entity_addr_t bind_addr;
