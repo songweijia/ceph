@@ -66,6 +66,10 @@ int main(int argc, const char **argv) {
   sin->sin_port = htons((uint16_t)atoi(tk.c_str()));  
   r = ms_near->bind(bind_addr);
 
+  // daemonize it
+  global_init_daemonize(g_ceph_context);
+  common_init_finish(g_ceph_context);
+
   // TODO: add those features.  
   WANAgent *wana = new WANAgent(g_ceph_context,ms_near,nullptr,nullptr,nullptr);
   ms_near->start();
