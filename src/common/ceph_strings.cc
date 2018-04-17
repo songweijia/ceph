@@ -13,6 +13,7 @@ const char *ceph_entity_type_name(int type)
 	case CEPH_ENTITY_TYPE_MGR: return "mgr";
 	case CEPH_ENTITY_TYPE_CLIENT: return "client";
 	case CEPH_ENTITY_TYPE_AUTH: return "auth";
+        case CEPH_ENTITY_TYPE_WANA: return "wana";
 	default: return "unknown";
 	}
 }

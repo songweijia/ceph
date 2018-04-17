@@ -51,7 +51,7 @@ int main(int argc, const char **argv) {
     entity_name_t::WANA(), "wana", getpid(), Messenger::HAS_HEAVY_TRAFFIC | Messenger::HAS_MANY_CONNECTIONS );
   assert(ms_near);
   ms_near->set_cluster_protocol(CEPH_WANA_PROTOCOL);
-  cout << "starting wana at " << ms_near->get_myaddr() << "." << std::endl;
+  dout(10) << "starting wana at " << ms_near->get_myaddr() << "." << dendl;
   ms_near->set_policy(entity_name_t::TYPE_WANA,Messenger::Policy::stateless_server(0));
 
   // TODO: make this nicer by using configuration tools.

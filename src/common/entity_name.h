@@ -58,6 +58,7 @@ struct EntityName
   bool is_mds() const { return get_type() == CEPH_ENTITY_TYPE_MDS; }
   bool is_client() const { return get_type() == CEPH_ENTITY_TYPE_CLIENT; }
   bool is_mon() const { return get_type() == CEPH_ENTITY_TYPE_MON; }
+  bool is_wana() const { return get_type() == CEPH_ENTITY_TYPE_OSD; }
 
   const char * get_type_name() const;
   const std::string &get_id() const;
