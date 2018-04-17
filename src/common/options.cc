@@ -213,6 +213,18 @@ std::vector<Option> get_global_options() {
   			"list of IP addresses or hostnames. Hostnames are "
   			"resolved via DNS and all A or AAAA records are "
   			"included in the search list.")
+    .add_service("wana"),
+
+    Option("local_dc_wana", Option::TYPE_STR, Option::LEVEL_BASIC)
+    .set_description("host:ip pair for the WAN Agent in local datacenter.")
+    .set_long_description("WAN Agent service in the local data center. "
+      "The format is IP:PORT. ")
+    .add_service("wana"),
+
+    Option("remote_dc_wanas", Option::TYPE_STR, Option::LEVEL_BASIC)
+    .set_description("The WAN Agents in remote datacenters.")
+    .set_long_description("WAN Agent services in the remote datacenters. "
+      "The format is IP:PORT,IP:PORT,IP:PORT... ")
     .add_service("common"),
 
     Option("mon_dns_srv_name", Option::TYPE_STR, Option::LEVEL_ADVANCED)

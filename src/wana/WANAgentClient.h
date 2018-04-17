@@ -26,7 +26,7 @@ public:
     // setup wana instance
     // TODO: the configuration is from the configuration file
     // those needs to be managed by monitor in the future
-    std::string near_wana_addr = cct_->_conf->get_val<std::string>("wana_near");
+    std::string near_wana_addr = cct_->_conf->get_val<std::string>("local_dc_wana");
     std::istringstream f(near_wana_addr);
     std::string tk;
 
