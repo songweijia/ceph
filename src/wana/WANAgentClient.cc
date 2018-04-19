@@ -6,7 +6,7 @@
 #define dout_subsys ceph_subsys_wana
 
 int WANAgentClient::init() {
-  dout(20) << __func__ << "begins." << dendl;
+  dout(10) << __func__ << "begins." << dendl;
   assert(this->wana_messenger);
 
   lock.get_write();
@@ -20,15 +20,15 @@ int WANAgentClient::init() {
   this->wana_con = this->wana_messenger->get_connection(this->wana_inst);
   
   this->lock.unlock();
-  dout(20) << __func__ << "done." << dendl;
+  dout(10) << __func__ << "done." << dendl;
   return 0;
 }
 
 int WANAgentClient::forward(Message *m, uint32_t flags) {
 
-  dout(20) << __func__ << "begin with: m->get_type()=" << m->get_type() << ",flags=" << flags <<dendl;
+  dout(10) << __func__ << "begin with: m->get_type()=" << m->get_type() << ",flags=" << flags <<dendl;
   this->lock.get_read();
-  dout(20) << __func__ << " acquired read lock." << flags <<dendl;
+  dout(10) << __func__ << " acquired read lock." << flags <<dendl;
   if (!this->wana_con){
     this->lock.unlock();
     return -1; // not initialized.
@@ -50,7 +50,7 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
     }
   }
   if (!is_update) {
-    dout(20) << __func__ << "no updates, skip it." << dendl;
+    dout(10) << __func__ << "no updates, skip it." << dendl;
     return -3; // no updates to be forwarded.
   }
   // forward it.
@@ -63,7 +63,7 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
 
   // wait on message according to FLAGS?
   //TODO: wait on message.
-  dout(20) << __func__ << "done." << flags <<dendl;
+  dout(10) << __func__ << "done." << flags <<dendl;
 
   return 0;
 }

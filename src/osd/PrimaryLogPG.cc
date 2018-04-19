@@ -2337,9 +2337,9 @@ void PrimaryLogPG::do_op(OpRequestRef& op)
 
   execute_ctx(ctx); // execute_ctx...
   // send WAN request here.
-  dout(20) << __func__ << ": before forwarding message to wana." << dendl;
+  dout(10) << __func__ << ": before forwarding message to wana." << dendl;
   osd->forward_to_wana(m);
-  dout(20) << __func__ << ": after forwarding message to wana." << dendl;
+  dout(10) << __func__ << ": after forwarding message to wana." << dendl;
 
   utime_t prepare_latency = ceph_clock_now();
   prepare_latency -= op->get_dequeued_time();
