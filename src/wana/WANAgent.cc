@@ -27,3 +27,16 @@ void WANAgent::handle_signal(int signum) {
 WANAgent::~WANAgent() {
   //TODO: destructor
 }
+
+int WANAgent::init() {
+  this->near_messenger->add_dispatcher_head(this);
+  if (this->far_messenger)
+    this->far_messenger->add_dispatcher_head(this);
+  if (this->objecter_messenger)
+    this->objecter_messenger->add_dispatcher_head(this);
+  //TODO
+  return 0;
+}
+
+void WANAgent::shutdown() {
+}

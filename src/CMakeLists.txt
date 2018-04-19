@@ -874,8 +874,8 @@ add_subdirectory(osd)
 set(ceph_osd_srcs
   ceph_osd.cc)
 add_executable(ceph-osd ${ceph_osd_srcs})
-add_dependencies(ceph-osd erasure_code_plugins)
-target_link_libraries(ceph-osd osd os global-static common
+add_dependencies(ceph-osd erasure_code_plugins wana)
+target_link_libraries(ceph-osd osd os global-static common wana
   ${BLKID_LIBRARIES} ${RDMA_LIBRARIES})
 if(WITH_FUSE)
   target_link_libraries(ceph-osd ${FUSE_LIBRARIES})

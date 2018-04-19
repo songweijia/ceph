@@ -41,6 +41,7 @@
 #include "Session.h"
 
 #include "osd/PGQueueable.h"
+#include "wana/WANAgentClient.h"
 
 #include <atomic>
 #include <map>
@@ -363,6 +364,7 @@ public:
   PerfCounters *&logger;
   PerfCounters *&recoverystate_perf;
   MonClient   *&monc;
+  WANAgentClient *&wanac;
   ThreadPool::BatchWorkQueue<PG> &peering_wq;
   GenContextWQ recovery_gen_wq;
   ClassHandler  *&class_handler;
@@ -1109,6 +1111,9 @@ public:
   void set_injectfull(s_names type, int64_t count);
   bool check_osdmap_full(const set<pg_shard_t> &missing_on);
 
+  // -- wana services --
+public:
+  int forward_to_wana(Message *m, uint32_t flags=RETURN_IMMEDIATELY);
 
   // -- epochs --
 private:
@@ -1169,7 +1174,6 @@ public:
   bool prepare_to_stop();
   void got_stop_ack();
 
-
 #ifdef PG_DEBUG_REFS
   Mutex pgid_lock;
   map<spg_t, int> pgid_tracker;
@@ -1212,6 +1216,7 @@ protected:
   Messenger   *objecter_messenger;
   MonClient   *monc; // check the "monc helpers" list before accessing directly
   MgrClient   mgrc;
+  WANAgentClient    *wanac; // WANAgent client.
   PerfCounters      *logger;
   PerfCounters      *recoverystate_perf;
   ObjectStore *store;
@@ -2395,7 +2400,9 @@ private:
       Messenger *hb_front_server,
       Messenger *hb_back_server,
       Messenger *osdc_messenger,
-      MonClient *mc, const std::string &dev, const std::string &jdev);
+      MonClient *mc,
+      WANAgentClient *wc,
+      const std::string &dev, const std::string &jdev);
   ~OSD() override;
 
   // static bits

@@ -2337,6 +2337,8 @@ void PrimaryLogPG::do_op(OpRequestRef& op)
 
   execute_ctx(ctx); // execute_ctx...
   // send WAN request here.
+  osd->forward_to_wana(m);
+
   utime_t prepare_latency = ceph_clock_now();
   prepare_latency -= op->get_dequeued_time();
   osd->logger->tinc(l_osd_op_prepare_lat, prepare_latency);

@@ -214,6 +214,7 @@ OSDService::OSDService(OSD *osd) :
   logger(osd->logger),
   recoverystate_perf(osd->recoverystate_perf),
   monc(osd->monc),
+  wanac(osd->wanac),
   peering_wq(osd->peering_wq),
   recovery_gen_wq("recovery_gen_wq", cct->_conf->osd_recovery_thread_timeout,
 		  &osd->disk_tp),
@@ -1910,6 +1911,7 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
 	 Messenger *hb_back_serverm,
 	 Messenger *osdc_messenger,
 	 MonClient *mc,
+         WANAgentClient *wc,
 	 const std::string &dev, const std::string &jdev) :
   Dispatcher(cct_),
   osd_lock("OSD::osd_lock"),
@@ -1929,6 +1931,7 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
   objecter_messenger(osdc_messenger),
   monc(mc),
   mgrc(cct_, client_messenger),
+  wanac(wc),
   logger(NULL),
   recoverystate_perf(NULL),
   store(store_),
@@ -2586,6 +2589,10 @@ int OSD::init()
   monc->set_want_keys(CEPH_ENTITY_TYPE_MON | CEPH_ENTITY_TYPE_OSD
                       | CEPH_ENTITY_TYPE_MGR);
   r = monc->init();
+  if (r < 0)
+    goto out;
+
+  r = wanac->init();
   if (r < 0)
     goto out;
 
@@ -3475,6 +3482,7 @@ int OSD::shutdown()
   dout(10) << "Store synced" << dendl;
 
   monc->shutdown();
+  wanac->shutdown();
   osd_lock.Unlock();
 
   osdmap = OSDMapRef();
@@ -9683,6 +9691,20 @@ void OSDService::finish_recovery_op(PG *pg, const hobject_t& soid, bool dequeue)
 bool OSDService::is_recovery_active()
 {
   return local_reserver.has_reservation() || remote_reserver.has_reservation();
+}
+
+int OSDService::forward_to_wana(Message *m, uint32_t flags) {
+  if (flags!=RETURN_IMMEDIATELY) {
+    derr << "forward_to_wana() does not support flags other than RETURN_IMMEDIATELY yet." << dendl;
+    return -1;
+  }
+
+  if (m->get_type() != CEPH_MSG_OSD_OP) {
+    dout(1) << "filtering message types other than CEPH_MSG_OSD_OP:m->get_type()=" << m->get_type() << dendl;
+    return 0;
+  }
+
+  return wanac->forward(m,flags);
 }
 
 // =========================================================

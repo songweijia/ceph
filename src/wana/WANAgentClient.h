@@ -62,9 +62,9 @@ public:
   /**
    * forward a message to remote
    */
-  #define RETURN_ON_MASK = 0xf;
-  #define RETURN_IMMEDIATELY = 0x0;
-  #define RETURN_ON_FULLY_COMMITED = 0xf;
+  #define RETURN_ON_MASK (0xf)
+  #define RETURN_IMMEDIATELY (0x0)
+  #define RETURN_ON_FULLY_COMMITED (0xf)
   int forward(Message *m,uint32_t flags);
   /**
    * forward a message to remote asynchronously

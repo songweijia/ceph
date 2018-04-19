@@ -24,6 +24,8 @@ using namespace std;
 #include "osd/OSD.h"
 #include "os/ObjectStore.h"
 #include "mon/MonClient.h"
+#include "wana/WANAgent.h"
+#include "wana/WANAgentClient.h"
 #include "include/ceph_features.h"
 
 #include "common/config.h"
@@ -465,6 +467,10 @@ flushjournal_out:
 					    getpid(),
 					    Messenger::HAS_HEAVY_TRAFFIC |
 					    Messenger::HAS_MANY_CONNECTIONS);
+  Messenger *ms_wana_client = Messenger::create(g_ceph_context, cluster_msgr_type,
+                                         entity_name_t::OSD(whoami), "wana",
+                                         getpid(),
+                                         Messenger::HAS_HEAVY_TRAFFIC);
   Messenger *ms_hb_back_client = Messenger::create(g_ceph_context, cluster_msgr_type,
 					     entity_name_t::OSD(whoami), "hb_back_client",
 					     getpid(), Messenger::HEARTBEAT);
@@ -480,9 +486,10 @@ flushjournal_out:
   Messenger *ms_objecter = Messenger::create(g_ceph_context, public_msgr_type,
 					     entity_name_t::OSD(whoami), "ms_objecter",
 					     getpid(), 0);
-  if (!ms_public || !ms_cluster || !ms_hb_front_client || !ms_hb_back_client || !ms_hb_back_server || !ms_hb_front_server || !ms_objecter)
+  if (!ms_public || !ms_cluster || !ms_wana_client || !ms_hb_front_client || !ms_hb_back_client || !ms_hb_back_server || !ms_hb_front_server || !ms_objecter)
     exit(1);
   ms_cluster->set_cluster_protocol(CEPH_OSD_PROTOCOL);
+  ms_wana_client->set_cluster_protocol(CEPH_WANA_PROTOCOL);
   ms_hb_front_client->set_cluster_protocol(CEPH_OSD_PROTOCOL);
   ms_hb_back_client->set_cluster_protocol(CEPH_OSD_PROTOCOL);
   ms_hb_back_server->set_cluster_protocol(CEPH_OSD_PROTOCOL);
@@ -537,6 +544,8 @@ flushjournal_out:
 				Messenger::Policy::stateless_server(0));
   ms_hb_front_server->set_policy(entity_name_t::TYPE_OSD,
 				 Messenger::Policy::stateless_server(0));
+  ms_wana_client->set_policy(entity_name_t::TYPE_OSD,
+                             Messenger::Policy::lossless_client(0));
 
   ms_objecter->set_default_policy(Messenger::Policy::lossy_client(CEPH_FEATURE_OSDREPLYMUX));
 
@@ -594,6 +603,9 @@ flushjournal_out:
     return -1;
   global_init_chdir(g_ceph_context);
 
+  WANAgentClient wc(g_ceph_context, ms_wana_client);
+  
+
 #ifndef BUILDING_FOR_EMBEDDED
   if (global_init_preload_erasure_code(g_ceph_context) < 0)
     return -1;
@@ -612,6 +624,7 @@ flushjournal_out:
                 ms_hb_back_server,
                 ms_objecter,
                 &mc,
+                &wc,
                 g_conf->osd_data,
                 g_conf->osd_journal);
 
@@ -629,6 +642,7 @@ flushjournal_out:
   ms_hb_back_server->start();
   ms_cluster->start();
   ms_objecter->start();
+  ms_wana_client->start();
 
   // start osd
   err = osd->init();
@@ -660,6 +674,7 @@ flushjournal_out:
   ms_hb_back_server->wait();
   ms_cluster->wait();
   ms_objecter->wait();
+  ms_wana_client->wait();
 
   unregister_async_signal_handler(SIGHUP, sighup_handler);
   unregister_async_signal_handler(SIGINT, handle_osd_signal);

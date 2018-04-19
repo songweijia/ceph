@@ -27,7 +27,9 @@
 #include "mon/MonClient.h"
 #include "common/ceph_argparse.h"
 #include "msg/Messenger.h"
+#include "wana/WANAgentClient.h"
 
+//TODO: this may not work without a wana client been added.
 class TestOSDScrub: public OSD {
 
 public:
@@ -42,7 +44,7 @@ public:
       Messenger *hb_back_server,
       Messenger *osdc_messenger,
       MonClient *mc, const std::string &dev, const std::string &jdev) :
-      OSD(cct_, store_, id, internal, external, hb_front_client, hb_back_client, hb_front_server, hb_back_server, osdc_messenger, mc, dev, jdev)
+      OSD(cct_, store_, id, internal, external, hb_front_client, hb_back_client, hb_front_server, hb_back_server, osdc_messenger, mc, nullptr, dev, jdev)
   {
   }
 

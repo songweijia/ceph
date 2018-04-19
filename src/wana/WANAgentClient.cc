@@ -10,7 +10,7 @@ int WANAgentClient::init() {
 
   lock.get_write();
   // stop if initialized.
-  if (!wana_con) {
+  if (wana_con) {
     this->lock.unlock();
     return -1; // already initialized
   }
@@ -61,6 +61,9 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
   //TODO: wait on message.
 
   return 0;
+}
+
+int WANAgentClient::shutdown() {
 }
 
 WANAgentClient::~WANAgentClient() {

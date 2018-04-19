@@ -29,8 +29,8 @@ static void usage()
 }
 
 int main(int argc, const char **argv) {
-  int r;
 
+  int r;
   // initialize the global environment
   vector<const char*> args;
   argv_to_vec(argc, argv, args);
@@ -75,7 +75,14 @@ int main(int argc, const char **argv) {
 
   // TODO: add those features.  
   WANAgent *wana = new WANAgent(g_ceph_context,ms_near,nullptr,nullptr,nullptr);
+  if (wana->init()) {
+    derr << "failed to initialize wana agent...quit..." << dendl;
+    exit(-1);
+  }
   ms_near->start();
+
+  wana->shutdown();
+
   ms_near->wait();
 
   init_async_signal_handler();

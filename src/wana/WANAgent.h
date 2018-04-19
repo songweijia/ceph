@@ -55,6 +55,10 @@ public:
                             CryptoKey& session_key) override { return false; }
   //signal handler
   void handle_signal(int signum);
+
+  // initialization
+  int init();
+  void shutdown();
   
 protected:
   CephContext *cct;
