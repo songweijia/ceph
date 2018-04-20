@@ -37,6 +37,8 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
 
   // we only forward CEPH_MSG_OSD_OP
   if (m->get_type() != CEPH_MSG_OSD_OP) {
+    derr << __func__ << " message type(" << m->get_type() << 
+      ") other than CEPH_MSG_OSD_OP cannot be forwarded." << dendl;
     return -2; // invalid message type
   }
   // we only forward updates.
@@ -53,14 +55,29 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
     dout(10) << __func__ << "no updates, skip it." << dendl;
     return -3; // no updates to be forwarded.
   }
-  // forward it.
+
+  // copy the message and forward it.
+  // TODO: check if it possible avoiding copy.
+  bufferlist payload,middle,data;
+  m->get_payload().copy(0,m->get_payload().length(),payload);
+  m->get_middle().copy(0,m->get_middle().length(),middle);
+  m->get_data().copy(0,m->get_data().length(),data);
+  MOSDOp *copied_fm = static_cast<MOSDOp*>(
+    decode_message(this->cct, m->get_connection()->msgr->crcflags, 
+      m->get_header(),
+      m->get_footer(),
+      payload,
+      middle,
+      data,
+      this->wana_con.get()));
+  
+
   // TODO: if connection broken, write to local buffer
   // and wait again.
-  if (this->wana_con->send_message(fm)) {
+  if (this->wana_con->send_message(copied_fm)) {
     dout(1) << __func__ << "forward message failed. return." << dendl;
     return -4; // send_message error.
   }
-
   // wait on message according to FLAGS?
   //TODO: wait on message.
   dout(10) << __func__ << "done." << flags <<dendl;
