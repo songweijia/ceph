@@ -25,8 +25,7 @@ public:
     Dispatcher(cct_),
     cct(cct_),
     wana_messenger(ms_wan_agent),
-    lock("wanaclient"),
-    wana_con(nullptr) {
+    lock("wanaclient"){
     // setup wana instance
     // TODO: the configuration is from the configuration file
     // those needs to be managed by monitor in the future
@@ -98,8 +97,7 @@ public:
 private:
   Messenger *wana_messenger;
   RWLock lock;
-  ConnectionRef wana_con;
-  struct entity_inst_t wana_inst;
+  entity_inst_t wana_inst;
 };
 
 #endif//CEPH_WAN_AGENT_CLIENT_H

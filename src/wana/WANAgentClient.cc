@@ -11,14 +11,7 @@ int WANAgentClient::init() {
 
   lock.get_write();
   // stop if initialized.
-  if (wana_con) {
-    this->lock.unlock();
-    return -1; // already initialized
-  }
-
-  // make a connection to local WANAgent
-  this->wana_con = this->wana_messenger->get_connection(this->wana_inst);
-  
+  // do nothing... so fa
   this->lock.unlock();
   dout(10) << __func__ << "done." << dendl;
   return 0;
@@ -29,11 +22,6 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
   dout(10) << __func__ << "begin with: m->get_type()=" << m->get_type() << ",flags=" << flags <<dendl;
   this->lock.get_read();
   dout(10) << __func__ << " acquired read lock." << flags <<dendl;
-  if (!this->wana_con){
-    this->lock.unlock();
-    return -1; // not initialized.
-  }
-  this->lock.unlock();
 
   // we only forward CEPH_MSG_OSD_OP
   if (m->get_type() != CEPH_MSG_OSD_OP) {
@@ -69,12 +57,12 @@ int WANAgentClient::forward(Message *m, uint32_t flags) {
       payload,
       middle,
       data,
-      this->wana_con.get()));
+      nullptr));
   
 
   // TODO: if connection broken, write to local buffer
   // and wait again.
-  if (this->wana_con->send_message(copied_fm)) {
+  if (this->wana_messenger->send_message(copied_fm,this->wana_inst)) {
     dout(1) << __func__ << "forward message failed. return." << dendl;
     return -4; // send_message error.
   }
@@ -89,9 +77,6 @@ int WANAgentClient::shutdown() {
 }
 
 WANAgentClient::~WANAgentClient() {
-  if (this->wana_con) {
-    this->wana_con->put();
-  }
 }
 
 void WANAgentClient::ms_fast_dispatch(Message *m) {
