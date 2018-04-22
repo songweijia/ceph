@@ -1850,6 +1850,34 @@ void PrimaryLogPG::do_op(OpRequestRef& op)
   // change anything that will break other reads on m (operator<<).
   MOSDOp *m = static_cast<MOSDOp*>(op->get_nonconst_req()); // get the message OpRequest tracks.
   assert(m->get_type() == CEPH_MSG_OSD_OP);
+
+  // make a copy for wan agent operations
+  MOSDOp *fm = nullptr;
+  { // fill fm
+    bool is_update = false;
+    std::vector<OSDOp>::const_iterator citr = fm->ops.cbegin();
+    while(citr != fm->ops.cend()) {
+      if(citr->op.op & CEPH_OSD_OP_MODE_WR){
+        is_update = true;
+        break;
+      }
+    }
+    if (is_update) {
+      bufferlist payload,middle,data;
+      m->get_payload().copy(0,m->get_payload().length(),payload);
+      m->get_middle().copy(0,m->get_middle().length(),middle);
+      m->get_data().copy(0,m->get_data().length(),data);
+      MOSDOp *fm = static_cast<MOSDOp*>(
+        decode_message(this->cct, m->get_connection()->msgr->crcflags,
+          m->get_header(),
+          m->get_footer(),
+          payload,
+          middle,
+          data,
+          nullptr));
+    }
+  }
+
   if (m->finish_decode()) { // extract info from buffer.
     op->reset_desc();   // for TrackedOp
     m->clear_payload();
@@ -2337,9 +2365,11 @@ void PrimaryLogPG::do_op(OpRequestRef& op)
 
   execute_ctx(ctx); // execute_ctx...
   // send WAN request here.
-  dout(10) << __func__ << ": before forwarding message to wana." << dendl;
-  osd->forward_to_wana(m);
-  dout(10) << __func__ << ": after forwarding message to wana." << dendl;
+  if (fm) {
+    dout(10) << __func__ << ": before forwarding message to wana." << dendl;
+    osd->forward_to_wana(fm); // take the ownership.
+    dout(10) << __func__ << ": after forwarding message to wana." << dendl;
+  }
 
   utime_t prepare_latency = ceph_clock_now();
   prepare_latency -= op->get_dequeued_time();
